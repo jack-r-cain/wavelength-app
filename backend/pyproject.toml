@@ -1,0 +1,17 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.18.1",
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.128.0",
+    "python-dotenv>=1.2.1",
+    "sqlmodel>=0.0.31",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.14",
+]
