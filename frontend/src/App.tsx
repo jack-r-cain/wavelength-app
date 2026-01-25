@@ -1,25 +1,24 @@
-import { useEffect, useState } from 'react'
+import { AddItemForm } from './components/AddItemForm'
+import { ItemList } from './components/ItemList'
 
 function App() {
-  const [apiStatus, setApiStatus] = useState<string>('Checking...')
-
-  useEffect(() => {
-    fetch('http://localhost:8000/health')
-      .then((res) => res.json())
-      .then((data) => setApiStatus(data.status))
-      .catch(() => setApiStatus('Error connecting to API'))
-  }, [])
-
   return (
-    <div className='min-h-screen bg-gray-50 flex items-center justify-center p-8'>
-      <div className='text-center'>
-        <h1 className='text-5xl font-bold text-gray-900 mb-4'>Wavelength</h1>
-        <p className='text-xl text-gray-600 mb-8'>Find what resonates</p>
-        <div className='bg-white px-6 py-3 rounded-lg shadow-sm'>
-          <p className='text-sm text-gray-500'>
-            API Status:{' '}
-            <span className='font-semibold text-gray-900'>{apiStatus}</span>
-          </p>
+    <div className='min-h-screen bg-gray-50 p-8'>
+      <div className='max-w-6xl mx-auto'>
+        <h1 className='text-4xl font-bold mb-8'>Wavelength</h1>
+
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
+          {/* Form takes 1 column */}
+          <div className='lg:col-span-1'>
+            <h2 className='text-2xl font-bold mb-4'>Add Item</h2>
+            <AddItemForm />
+          </div>
+
+          {/* List takes 2 columns */}
+          <div className='lg:col-span-2'>
+            <h2 className='text-2xl font-bold mb-4'>Your Collection</h2>
+            <ItemList />
+          </div>
         </div>
       </div>
     </div>
