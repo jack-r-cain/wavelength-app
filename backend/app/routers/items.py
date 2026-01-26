@@ -3,6 +3,9 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.schemas import ItemCreate, ItemResponse
 from app.models import Item, ItemType
+from app.services.embeddings import store_item_embedding, search_items
+
+
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -17,6 +20,8 @@ def create_item(item: ItemCreate, session: Session = Depends(get_session)):
     session.add(db_item)
     session.commit()
     session.refresh(db_item)
+    # Store embedding in Pinecone
+    store_item_embedding(db_item)
     return db_item
 
 @router.get("/", response_model=list[ItemResponse])
@@ -35,6 +40,20 @@ def get_items(
     results = session.exec(query).all()
     return results
 
+@router.get("/search")
+def search_items_endpoint( query: str, limit: int = 10, session: Session = Depends(get_session)):
+    matches = search_items(query, top_k=limit)
+    results = []
+    for match in matches:
+        item = session.get(Item, match["id"])
+        if item:
+            results.append({
+                **item.model_dump(),  # All item fields
+                "score": match["score"]  # Add similarity score
+            })
+    
+    return results
+
 @router.get("/{item_id}", response_model=ItemResponse)
 def get_item(item_id: int, session: Session = Depends(get_session)):
     item = session.get(Item, item_id)
@@ -50,4 +69,6 @@ def delete_item(item_id: int, session: Session = Depends(get_session)):
     session.delete(item)
     session.commit()
     return {"message": "Item deleted"}
+
+
 

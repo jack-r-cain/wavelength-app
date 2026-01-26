@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import items
 from .database import create_db_and_tables
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
