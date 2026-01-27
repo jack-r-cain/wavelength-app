@@ -3,9 +3,10 @@ import type { Item } from '../types/item'
 
 interface ItemCardProps {
   item: Item
+  score?: number
 }
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, score }: ItemCardProps) {
   const deleteMutation = useDeleteItem()
 
   const handleDelete = () => {
@@ -20,7 +21,11 @@ export function ItemCard({ item }: ItemCardProps) {
       <p className='text-sm text-gray-600'>{item.type}</p>
       {item.creator && <p className='text-sm'>{item.creator}</p>}
       {item.year && <p className='text-sm text-gray-500'>{item.year}</p>}
-
+      {score && (
+        <p className='text-xs text-gray-400'>
+          Match: {(score * 100).toFixed(0)}%
+        </p>
+      )}
       <button
         onClick={handleDelete}
         className='mt-2 text-red-600 text-sm hover:text-red-800'>

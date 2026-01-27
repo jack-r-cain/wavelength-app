@@ -28,3 +28,6 @@ export interface ItemCreate {
   notes: string | null
   image_url: string | null
 }
+export interface ItemWithScore extends Item {
+  score: number
+}

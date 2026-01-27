@@ -4,6 +4,13 @@ from app.database import get_session
 from app.schemas import ItemCreate, ItemResponse
 from app.models import Item, ItemType
 from app.services.embeddings import store_item_embedding, search_items
+from app.services.rag import find_connections, ask_about_taste
+from pydantic import BaseModel
+
+class ConnectionRequest(BaseModel):
+    item_ids: list[int]
+class QuestionRequest(BaseModel):
+    question: str
 
 
 
@@ -23,6 +30,15 @@ def create_item(item: ItemCreate, session: Session = Depends(get_session)):
     # Store embedding in Pinecone
     store_item_embedding(db_item)
     return db_item
+
+@router.post("/connections")
+def find_connections_endpoint(request: ConnectionRequest, session: Session = Depends(get_session)):
+    result = find_connections(request.item_ids, session)
+    return {"explanation": result}
+
+@router.post("/ask")
+def ask_endpoint(request: QuestionRequest, session: Session = Depends(get_session)):
+    return ask_about_taste(request.question, session)
 
 @router.get("/", response_model=list[ItemResponse])
 def get_items(

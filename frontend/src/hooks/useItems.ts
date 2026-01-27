@@ -34,3 +34,11 @@ export function useDeleteItem() {
     },
   })
 }
+
+export function useSearchItems(query: string, limit: number = 10) {
+  return useQuery({
+    queryKey: ['items', 'search', query, limit],
+    queryFn: () => itemsApi.search(query, limit),
+    enabled: query.length > 0, // Only search if query exists
+  })
+}
