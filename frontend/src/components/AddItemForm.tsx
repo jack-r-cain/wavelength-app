@@ -2,7 +2,11 @@ import { useState, type FormEvent } from 'react'
 import { useCreateItem } from '../hooks/useItems'
 import type { ItemCreate } from '../types/item'
 
-export function AddItemForm() {
+interface AddItemFormProps {
+  onSuccess?: () => void
+}
+
+export function AddItemForm({ onSuccess }: AddItemFormProps = {}) {
   const createMutation = useCreateItem()
   const [formData, setFormData] = useState<ItemCreate>({
     title: '',
@@ -26,6 +30,7 @@ export function AddItemForm() {
           notes: null,
           image_url: null,
         })
+        onSuccess?.()
       },
     })
   }

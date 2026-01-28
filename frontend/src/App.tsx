@@ -1,47 +1,89 @@
+import { useState } from 'react'
+import { Tabs } from './components/Tabs'
+import { Modal } from './components/Modal'
 import { AddItemForm } from './components/AddItemForm'
 import { ItemList } from './components/ItemList'
 import { Searchbar } from './components/Searchbar'
-import { AskQuestion } from './components/AskQuestion'
+import { ChatInterface } from './components/ChatInterface'
 import { FindConnections } from './components/FindConnections'
 
 function App() {
-  return (
-    <div className='min-h-screen bg-gray-50 p-8'>
-      <div className='max-w-7xl mx-auto space-y-8'>
-        <h1 className='text-4xl font-bold'>Wavelength</h1>
+  const [activeTab, setActiveTab] = useState('collection')
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
-        {/* Search */}
-        <section>
-          <h2 className='text-2xl font-bold mb-4'>Search</h2>
-          <Searchbar />
-        </section>
-
-        {/* AI Features - side by side */}
-        <section className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-          <div>
-            <h2 className='text-2xl font-bold mb-4'>Ask About Your Taste</h2>
-            <AskQuestion />
+  const tabs = [
+    {
+      id: 'collection',
+      label: '📚 Collection',
+      content: (
+        <div className='space-y-6'>
+          {/* Add button at top */}
+          <div className='flex justify-between items-center'>
+            <h2 className='text-2xl font-bold'>Your Collection</h2>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2'>
+              <span>➕</span>
+              <span>Add Item</span>
+            </button>
           </div>
 
           <div>
-            <h2 className='text-2xl font-bold mb-4'>Find Connections</h2>
-            <FindConnections />
-          </div>
-        </section>
-
-        {/* Add & View */}
-        <section className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-          <div className='lg:col-span-1'>
-            <h2 className='text-2xl font-bold mb-4'>Add Item</h2>
-            <AddItemForm />
+            <h3 className='text-lg font-semibold mb-3'>Search</h3>
+            <Searchbar />
           </div>
 
-          <div className='lg:col-span-2'>
-            <h2 className='text-2xl font-bold mb-4'>Your Collection</h2>
+          <div>
+            <h3 className='text-lg font-semibold mb-3'>All Items</h3>
             <ItemList />
           </div>
-        </section>
-      </div>
+        </div>
+      ),
+    },
+    {
+      id: 'chat',
+      label: '💬 Chat',
+      content: (
+        <div className='max-w-4xl mx-auto'>
+          <h2 className='text-2xl font-bold mb-4'>Chat About Your Taste</h2>
+          <ChatInterface />
+        </div>
+      ),
+    },
+    {
+      id: 'insights',
+      label: '🔍 Insights',
+      content: (
+        <div className='max-w-4xl mx-auto'>
+          <h2 className='text-2xl font-bold mb-4'>Find Connections</h2>
+          <FindConnections />
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className='min-h-screen bg-gray-50'>
+      {/* Header */}
+      <header className='bg-white border-b sticky top-0 z-10'>
+        <div className='max-w-7xl mx-auto px-8 py-6'>
+          <h1 className='text-3xl font-bold'>Wavelength</h1>
+          <p className='text-gray-600 text-sm mt-1'>Find what resonates</p>
+        </div>
+      </header>
+
+      {/* Main content with tabs */}
+      <main className='max-w-7xl mx-auto px-8 py-6'>
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      </main>
+
+      {/* Add Item Modal */}
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title='Add New Item'>
+        <AddItemForm onSuccess={() => setIsAddModalOpen(false)} />
+      </Modal>
     </div>
   )
 }

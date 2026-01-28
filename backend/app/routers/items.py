@@ -7,6 +7,7 @@ from app.models import Item, ItemType
 from app.services.embeddings import store_item_embedding, search_items
 from app.services.rag import find_connections, ask_about_taste, ask_about_taste_stream
 from pydantic import BaseModel
+import asyncio
 
 
 class ConnectionRequest(BaseModel):
@@ -14,8 +15,6 @@ class ConnectionRequest(BaseModel):
 class QuestionRequest(BaseModel):
     question: str
     session_id: str = 'default'
-
-
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -56,12 +55,18 @@ async def ask_stream_endpoint(
             session, 
             request.session_id
         ):
-            # SSE format: "data: <content>\n\n"
+            # Send each chunk immediately
             yield f"data: {chunk}\n\n"
+            # Force flush
+            await asyncio.sleep(0)  # Yield control to allow sending
     
     return StreamingResponse(
         generate(),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        }
     )
 
 @router.get("/", response_model=list[ItemResponse])
