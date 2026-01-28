@@ -1,16 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 from app.database import get_session
 from app.schemas import ItemCreate, ItemResponse
 from app.models import Item, ItemType
 from app.services.embeddings import store_item_embedding, search_items
-from app.services.rag import find_connections, ask_about_taste
+from app.services.rag import find_connections, ask_about_taste, ask_about_taste_stream
 from pydantic import BaseModel
+
 
 class ConnectionRequest(BaseModel):
     item_ids: list[int]
 class QuestionRequest(BaseModel):
     question: str
+    session_id: str = 'default'
 
 
 
@@ -38,7 +41,28 @@ def find_connections_endpoint(request: ConnectionRequest, session: Session = Dep
 
 @router.post("/ask")
 def ask_endpoint(request: QuestionRequest, session: Session = Depends(get_session)):
-    return ask_about_taste(request.question, session)
+    return ask_about_taste(request.question, session, request.session_id)
+
+@router.post("/ask/stream")
+async def ask_stream_endpoint(
+    request: QuestionRequest,
+    session: Session = Depends(get_session)
+):
+    """Streaming version of ask endpoint."""
+    
+    async def generate():
+        for chunk in ask_about_taste_stream(
+            request.question, 
+            session, 
+            request.session_id
+        ):
+            # SSE format: "data: <content>\n\n"
+            yield f"data: {chunk}\n\n"
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
 
 @router.get("/", response_model=list[ItemResponse])
 def get_items(
