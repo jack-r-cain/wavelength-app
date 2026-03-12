@@ -1,35 +1,19 @@
-from sqlmodel import create_engine, SQLModel, Session
+from sqlmodel import SQLModel, Session, create_engine
 
-# SQLite database URL
-# "sqlite:///./wavelength.db" means:
-# - sqlite:// = SQLite database
-# - ./ = current directory
-# - wavelength.db = filename
-DATABASE_URL = "sqlite:///./wavelength.db"
+from app.core.config import settings
 
-# Create engine
-# connect_args={"check_same_thread": False} is SQLite-specific
-# (allows FastAPI to use it across threads)
+
 engine = create_engine(
-    DATABASE_URL,
-    echo=True,  # Print all SQL queries (helpful for learning!)
-    connect_args={"check_same_thread": False}
+    settings.DATABASE_URL,
+    echo=settings.DATABASE_ECHO,
+    connect_args=settings.sqlite_connect_args,
 )
 
 
-def create_db_and_tables():
-    """Create all database tables"""
+def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
 
 def get_session():
-    """
-    Dependency that provides a database session.
-    
-    This is used in FastAPI routes:
-    @app.get("/items")
-    def get_items(session: Session = Depends(get_session)):
-        ...
-    """
     with Session(engine) as session:
         yield session

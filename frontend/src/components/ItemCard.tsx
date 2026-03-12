@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useDeleteItem } from '../hooks/useItems'
 import type { Item } from '../types/item'
+import { Modal } from './Modal'
+import { EditItemForm } from './EditItemForm'
 
 interface ItemCardProps {
   item: Item
@@ -7,6 +10,7 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, score }: ItemCardProps) {
+  const [isEditing, setIsEditing] = useState(false)
   const deleteMutation = useDeleteItem()
 
   const handleDelete = () => {
@@ -16,21 +20,37 @@ export function ItemCard({ item, score }: ItemCardProps) {
   }
 
   return (
-    <div className='bg-white rounded-lg shadow p-4'>
-      <h3 className='font-bold text-lg'>{item.title}</h3>
-      <p className='text-sm text-gray-600'>{item.type}</p>
-      {item.creator && <p className='text-sm'>{item.creator}</p>}
-      {item.year && <p className='text-sm text-gray-500'>{item.year}</p>}
-      {score && (
-        <p className='text-xs text-gray-400'>
-          Match: {(score * 100).toFixed(0)}%
-        </p>
-      )}
-      <button
-        onClick={handleDelete}
-        className='mt-2 text-red-600 text-sm hover:text-red-800'>
-        Delete
-      </button>
-    </div>
+    <>
+      <div className='bg-white rounded-lg shadow p-4'>
+        <h3 className='font-bold text-lg'>{item.title}</h3>
+        <p className='text-sm text-gray-600'>{item.type}</p>
+        {item.creator && <p className='text-sm'>{item.creator}</p>}
+        {item.year && <p className='text-sm text-gray-500'>{item.year}</p>}
+        {score && (
+          <p className='text-xs text-gray-400'>
+            Match: {(score * 100).toFixed(0)}%
+          </p>
+        )}
+        <div className='mt-2 flex gap-3'>
+          <button
+            onClick={() => setIsEditing(true)}
+            className='text-blue-600 text-sm hover:text-blue-800'>
+            Edit
+          </button>
+          <button
+            onClick={handleDelete}
+            className='text-red-600 text-sm hover:text-red-800'>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <Modal
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        title='Edit Item'>
+        <EditItemForm item={item} onSuccess={() => setIsEditing(false)} />
+      </Modal>
+    </>
   )
 }

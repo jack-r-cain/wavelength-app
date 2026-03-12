@@ -1,5 +1,5 @@
 import { api } from '../lib/api'
-import type { Item, ItemCreate, ItemWithScore } from '../types/item'
+import type { Item, ItemCreate, ItemUpdate, ItemWithScore } from '../types/item'
 
 export const itemsApi = {
   // GET /items
@@ -11,6 +11,12 @@ export const itemsApi = {
   // POST /items
   create: async (item: ItemCreate): Promise<Item> => {
     const { data } = await api.post('/items/', item)
+    return data
+  },
+
+  // PUT /items/{id}
+  update: async (id: number, update: ItemUpdate): Promise<Item> => {
+    const { data } = await api.put(`/items/${id}`, update)
     return data
   },
 

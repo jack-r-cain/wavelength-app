@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
 import { api } from '../lib/api'
-import type { Item } from '../types/item'
-
-interface AskResult {
-  answer: string
-  sources: Item[]
-}
+import type { AskResult } from '../types/item'
 
 export function AskQuestion() {
   const [question, setQuestion] = useState('')
@@ -18,7 +13,7 @@ export function AskQuestion() {
     setLoading(true)
 
     try {
-      const { data } = await api.post<AskResult>('/items/ask', { question })
+      const { data } = await api.post<AskResult>('/knowledge/ask', { question })
       setResult(data)
     } catch (error) {
       console.error('Error asking question:', error)
@@ -54,11 +49,12 @@ export function AskQuestion() {
 
           {result.sources.length > 0 && (
             <div className='bg-gray-50 p-4 rounded-lg'>
-              <h3 className='font-bold mb-2'>Sources:</h3>
+              <h3 className='font-bold mb-2'>Grounding Sources:</h3>
               <ul className='space-y-1'>
                 {result.sources.map((source) => (
-                  <li key={source.id} className='text-sm text-gray-600'>
-                    • {source.title} {source.creator && `by ${source.creator}`}
+                  <li key={source.item.id} className='text-sm text-gray-600'>
+                    • [{source.citation_label}] {source.item.title}{' '}
+                    {source.item.creator && `by ${source.item.creator}`}
                   </li>
                 ))}
               </ul>

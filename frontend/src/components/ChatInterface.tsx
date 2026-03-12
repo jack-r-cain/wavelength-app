@@ -29,7 +29,7 @@ export function ChatInterface() {
   }
 
   return (
-    <div className='flex flex-col h-[600px] bg-white rounded-lg shadow'>
+    <div className='flex flex-col h-130 bg-white rounded-lg shadow'>
       {/* Header with new chat button */}
       <div className='p-4 border-b flex justify-between items-center'>
         <h3 className='font-bold'>Chat with Wavelength</h3>

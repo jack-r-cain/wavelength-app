@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import type { ReactNode } from 'react'
+
 import { Tabs } from './components/Tabs'
 import { Modal } from './components/Modal'
 import { AddItemForm } from './components/AddItemForm'
@@ -6,22 +7,26 @@ import { ItemList } from './components/ItemList'
 import { Searchbar } from './components/Searchbar'
 import { ChatInterface } from './components/ChatInterface'
 import { FindConnections } from './components/FindConnections'
+import { useUIStore } from './stores/uiStore'
+import type { ActiveTab } from './stores/uiStore'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('collection')
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const activeTab = useUIStore((state) => state.activeTab)
+  const setActiveTab = useUIStore((state) => state.setActiveTab)
+  const isModalOpen = useUIStore((state) => state.isModalOpen)
+  const openModal = useUIStore((state) => state.openModal)
+  const closeModal = useUIStore((state) => state.closeModal)
 
-  const tabs = [
+  const tabs: { id: ActiveTab; label: string; content: ReactNode }[] = [
     {
       id: 'collection',
       label: '📚 Collection',
       content: (
-        <div className='space-y-6'>
-          {/* Add button at top */}
+        <div className='space-y-4'>
           <div className='flex justify-between items-center'>
             <h2 className='text-2xl font-bold'>Your Collection</h2>
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={openModal}
               className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2'>
               <span>➕</span>
               <span>Add Item</span>
@@ -64,25 +69,23 @@ function App() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
       <header className='bg-white border-b sticky top-0 z-10'>
-        <div className='max-w-7xl mx-auto px-8 py-6'>
+        <div className='max-w-7xl mx-auto px-8 py-1'>
           <h1 className='text-3xl font-bold'>Wavelength</h1>
           <p className='text-gray-600 text-sm mt-1'>Find what resonates</p>
         </div>
       </header>
 
-      {/* Main content with tabs */}
-      <main className='max-w-7xl mx-auto px-8 py-6'>
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className='max-w-7xl mx-auto px-8'>
+        <Tabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={(tabId) => setActiveTab(tabId as ActiveTab)}
+        />
       </main>
 
-      {/* Add Item Modal */}
-      <Modal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        title='Add New Item'>
-        <AddItemForm onSuccess={() => setIsAddModalOpen(false)} />
+      <Modal isOpen={isModalOpen} onClose={closeModal} title='Add New Item'>
+        <AddItemForm onSuccess={closeModal} />
       </Modal>
     </div>
   )

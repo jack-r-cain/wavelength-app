@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -9,23 +9,29 @@ export function useStreamingChat(sessionId: string) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
 
+  useEffect(() => {
+    setMessages([])
+  }, [sessionId])
+
   const sendMessage = async (question: string) => {
     setMessages((prev) => [...prev, { role: 'user', content: question }])
     setIsStreaming(true)
 
     try {
-      const response = await fetch('http://localhost:8000/items/ask/stream', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/knowledge/ask/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, session_id: sessionId }),
       })
 
+      if (!response.ok) throw new Error(`Streaming failed with ${response.status}`)
       if (!response.body) throw new Error('No response body')
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let assistantMessage = ''
       let updateCounter = 0
+      let buffer = ''
 
       setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
@@ -33,24 +39,28 @@ export function useStreamingChat(sessionId: string) {
         const { done, value } = await reader.read()
         if (done) break
 
-        console.log('Raw chunk size:', value?.length) // Add this
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() ?? ''
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const content = line.slice(6)
-            if (content.trim()) {
-              assistantMessage += content
+        for (const event of events) {
+          const line = event
+            .split('\n')
+            .find((eventLine) => eventLine.startsWith('data: '))
+          if (line?.startsWith('data: ')) {
+            const payload = JSON.parse(line.slice(6)) as {
+              type?: string
+              content?: string
+            }
+            if (payload.type === 'token' && payload.content) {
+              assistantMessage += payload.content
               updateCounter++
 
-              // Only update UI every 3 chunks OR on last chunk
               if (updateCounter % 3 === 0 || done) {
                 setMessages((prev) => [
                   ...prev.slice(0, -1),
                   { role: 'assistant', content: assistantMessage },
                 ])
-                // Small delay to make animation visible
                 await new Promise((resolve) => setTimeout(resolve, 10))
               }
             }
@@ -65,6 +75,13 @@ export function useStreamingChat(sessionId: string) {
       ])
     } catch (error) {
       console.error('Streaming error:', error)
+      setMessages((prev) => [
+        ...prev.filter((message, index) => {
+          if (index !== prev.length - 1) return true
+          return message.content.trim().length > 0
+        }),
+        { role: 'assistant', content: 'The knowledge agent hit an error while streaming.' },
+      ])
     } finally {
       setIsStreaming(false)
     }

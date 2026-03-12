@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { itemsApi } from '../api/items'
+import type { ItemUpdate } from '../types/item'
 
 export function useItems() {
   return useQuery({
@@ -15,6 +16,18 @@ export function useCreateItem() {
     mutationFn: itemsApi.create,
     onSuccess: () => {
       // Invalidate and refetch items after creating
+      queryClient.invalidateQueries({ queryKey: ['items'] })
+    },
+  })
+}
+
+export function useUpdateItem() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, update }: { id: number; update: ItemUpdate }) =>
+      itemsApi.update(id, update),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] })
     },
   })

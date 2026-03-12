@@ -1,10 +1,15 @@
-from langchain_core.chat_history import InMemoryChatMessageHistory
+from dataclasses import dataclass
 
-# Store conversations by session_id
-conversations: dict[str, InMemoryChatMessageHistory] = {}
 
-def get_conversation(session_id: str) -> InMemoryChatMessageHistory:
-    """Get or create a conversation history."""
-    if session_id not in conversations:
-        conversations[session_id] = InMemoryChatMessageHistory()
-    return conversations[session_id]
+@dataclass
+class ConversationState:
+    previous_response_id: str | None = None
+
+
+_conversations: dict[str, ConversationState] = {}
+
+
+def get_conversation(session_id: str) -> ConversationState:
+    if session_id not in _conversations:
+        _conversations[session_id] = ConversationState()
+    return _conversations[session_id]

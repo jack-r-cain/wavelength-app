@@ -1,19 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useDebounce } from 'use-debounce'
 import { useSearchItems } from '../hooks/useItems'
 import { ItemCard } from './ItemCard'
 
 export function Searchbar() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
-
-  // Debounce: wait 300ms after user stops typing
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+  const [debouncedQuery] = useDebounce(searchQuery, 300)
 
   const { data: results, isLoading } = useSearchItems(debouncedQuery)
 
